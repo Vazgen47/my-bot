@@ -209,3 +209,10 @@ ${msg.text}`;
         bot.sendMessage(chatId, `Խնդրում ենք օգտվել կոճակներից՝ ծառայություններին ծանոթանալու համար 😊`, mainKeyboard);
     }
 });
+const http = require('http');
+http.createServer((req, res) => {
+    res.write('Bot is running!');
+    res.end();
+}).listen(process.env.PORT || 3000);
+
+console.log("Server logic added for Render!");
