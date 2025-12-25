@@ -11,5 +11,13 @@
   "license": "ISC",
   "dependencies": {
     "node-telegram-bot-api": "^0.67.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vazgen47/Tekegram-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Vazgen47/Tekegram-bot/issues"
+  },
+  "homepage": "https://github.com/Vazgen47/Tekegram-bot#readme"
 }
