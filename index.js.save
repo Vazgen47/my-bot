@@ -1,0 +1,253 @@
+const TelegramBot = require('node-telegram-bot-api');
+
+// Քո տվյալները
+const token = '8584375772:AAHavBwqJdWsblCin8OsCRAlIe7sehm_QXI';
+const ADMIN_CHAT_ID = '6478756726'; 
+
+const bot = new TelegramBot(token, { polling: true });
+
+// Օգտատիրոջ վիճակը պահելու համար
+const userState = {};
+
+// --- ՄԵՆՅՈՒՆԵՐ ---
+
+const mainKeyboard = {
+    reply_markup: {
+        inline_keyboard: [
+            [{ text: '🌐 Վեբ Կայքեր', callback_data: 'web_main' }, { text: '🤖 Shop Բոտեր', callback_data: 'ecommerce_bot' }],
+            [{ text: '🚀 DIGITAL ՓԱԹԵԹՆԵՐ (NEW)', callback_data: 'digital_packages' }], // ՆՈՐ ԿՈՃԱԿ
+            [{ text: '⚙️ Աշխատանքային Փուլեր', callback_data: 'process' }, { text: '❓ FAQ', callback_data: 'faq' }],
+            [{ text: '📢 Բողոքներ և Առաջարկներ', callback_data: 'feedback' }],
+            [{ text: '💎 Ինչու՞ ընտրել մեզ', callback_data: 'why_us' }],
+            [{ text: '📁 Portfolio', url: 'https://mkheyan-vazgen-portfolio.vercel.app' }, { text: '📞 Կապ', callback_data: 'contact' }]
+        ]
+    }
+};
+
+const webSubMenu = {
+    reply_markup: {
+        inline_keyboard: [
+            [{ text: '📦 Ծանոթանալ Փաթեթներին', callback_data: 'web_packages' }],
+            [{ text: '🚀 Պատվիրել Անհատական Կայք', callback_data: 'contact' }],
+            [{ text: '🔙 Հետ', callback_data: 'back_to_main' }]
+        ]
+    }
+};
+
+const botSubMenu = {
+    reply_markup: {
+        inline_keyboard: [
+            [{ text: '📦 Ծանոթանալ Փաթեթներին', callback_data: 'bot_packages' }],
+            [{ text: '🚀 Պատվիրել Բոտ', callback_data: 'contact' }],
+            [{ text: '🔙 Հետ', callback_data: 'back_to_main' }]
+        ]
+    }
+};
+
+const backToMain = {
+    reply_markup: {
+        inline_keyboard: [[{ text: '🔙 Վերադառնալ Գլխավոր Մենյու', callback_data: 'back_to_main' }]]
+    }
+};
+
+// --- ՖՈՒՆԿՑԻԱՆԵՐ ---
+
+function sendFancyMessage(chatId, text, keyboard = backToMain, parseMode = null) {
+    bot.sendChatAction(chatId, 'typing');
+    setTimeout(() => {
+        bot.sendMessage(chatId, text, {
+            ...keyboard,
+            parse_mode: parseMode || undefined
+        });
+    }, 400);
+}
+
+// --- ՀՐԱՄԱՆՆԵՐ ---
+
+bot.onText(/\/start/, (msg) => {
+    userState[msg.chat.id] = null;
+    const welcomeText = `Ողջույն, բարի գալուստ Mkheyan Engineering 🚀
+
+Մենք ստեղծում ենք բարձրակարգ թվային լուծումներ, որոնք կբարձրացնեն Ձեր բիզնեսի վաճառքները և հեղինակությունը ✨
+
+Ընտրեք Ձեզ հետաքրքրող ուղղությունը ստորև 👇`;
+    bot.sendMessage(msg.chat.id, welcomeText, mainKeyboard);
+});
+
+bot.on('callback_query', (query) => {
+    const chatId = query.message.chat.id;
+    const data = query.data;
+
+    if (data === 'back_to_main') {
+        userState[chatId] = null;
+        bot.editMessageText(`🏠 Գլխավոր Մենյու: Ինչպե՞ս կարող ենք օգնել Ձեր բիզնեսին 👇`, {
+            chat_id: chatId,
+            message_id: query.message.message_id,
+            ...mainKeyboard
+        });
+        bot.answerCallbackQuery(query.id).catch(() => {});
+        return;
+    }
+
+    switch (data) {
+        case 'web_main':
+            sendFancyMessage(chatId, `🌐 Վեբ Կայքերի Պրեմիում Մշակում
+
+Մենք ապահովում ենք իդեալական UI/UX դիզայն, կայծակնային արագություն և լիարժեք հարմարեցում բոլոր էկրաններին 📱 Ձեր կայքը կբարձրացնի բրենդի վստահությունը և կրկնապատկի վաճառքները 📈`, webSubMenu);
+            break;
+
+        case 'web_packages':
+            sendFancyMessage(chatId, `📦 Վեբ Կայքերի Փաթեթներ
+
+💎 *Landing Page* (Մեկ էջանոց)
+Հարմար է կոնկրետ մեկ ապրանքի կամ ծառայության վաճառքի համար:
+
+💎 *Corporate Site* (Բիզնես կայք)
+Լիարժեք ներկայացուցչական կայք՝ բլոգով, Մեր մասին էջով և կոնտակտներով:
+
+💎 *E-Commerce* (Օնլայն խանութ)
+Ամբողջական վաճառքի հարթակ՝ զամբյուղով, վճարումներով և պատվերների կառավարմամբ:`, backToMain, 'Markdown');
+            break;
+
+        case 'ecommerce_bot':
+            sendFancyMessage(chatId, `🤖 Բոտերի Մշակում
+
+Telegram բոտը թույլ է տալիս հաճախորդին կատարել գնում ընդամենը մի քանի վայրկյանում՝ առանց կայք անցնելու ⚡ Ավտոմատացրեք սպասարկումը և խնայեք ռեսուրսներ ✅`, botSubMenu);
+            break;
+
+        case 'bot_packages':
+            sendFancyMessage(chatId, `📦 Shop Բոտերի Փաթեթներ
+
+🔵 *1. START Shop Bot*  
+Կատալոգ + զամբյուղ + պատվեր
+
+🔵 *2. BUSINESS Shop Bot*  
+Վճարումներ + ադմին պանել + հաճախորդների բազա
+
+🔵 *3. PREMIUM AI Bot*  
+Արհեստական բանականություն, որը ինքնուրույն խորհուրդ է տալիս և վաճառում 🔥`, backToMain, 'Markdown');
+            break;
+
+        case 'digital_packages':
+            const digitalText = `🚀 *MKHEYAN ENGINEERING | Թվային Լուծումների Փաթեթներ*
+
+📦 *1. Digital START*  
+💰 *90,000* դրամ  
+🔹 Landing Page  
+🔹 Պարզ Shop Բոտ  
+🔹 QR կոդ  
+🔹 15 օր աջակցություն
+
+⚡ *2. Digital PRO*  
+💰 *240,000* դրամ  
+🔹 Բազմաֆունկցիոնալ կայք  
+🔹 Ինտերակտիվ բոտ  
+🔹 3 դինամիկ QR  
+🔹 2 ամիս աջակցություն
+
+🔥 *3. Digital MAX*  
+💰 *450,000* դրամից  
+🔹 Ինտերնետ-խանութ  
+🔹 AI Smart Bot  
+🔹 Analytics QR փաթեթ  
+🔹 Դոմեն + Հոսթինգ ԱՆՎՋԱՐ  
+🔹 6 ամիս աջակցություն
+
+Ընտրեք փաթեթը և սկսեք թվային աճը հենց հիմա 🚀`;
+
+            sendFancyMessage(chatId, digitalText, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🚀 Պատվիրել Հիմա', callback_data: 'contact' }],
+                        [{ text: '🔙 Հետ', callback_data: 'back_to_main' }]
+                    ]
+                }
+            }, 'Markdown');
+            break;
+
+        case 'process':
+            sendFancyMessage(chatId, `⚙️ Մեր Աշխատանքային Փուլերը
+
+📍 1. Ռազմավարության մշակում  
+📍 2. Պրոֆեսիոնալ UI/UX դիզայն  
+📍 3. Ծրագրային մշակում  
+📍 4. Բազմափուլ թեստավորում  
+📍 5. Մշտական տեխնիկական աջակցություն
+
+Մենք Ձեր կողքին ենք ամեն քայլափոխի 🤝`, backToMain);
+            break;
+
+        case 'faq':
+            sendFancyMessage(chatId, `❓ Հաճախակի Տրվող Հարցեր
+
+💡 *Որքա՞ն է արժեքը* — Անհատական հաշվարկ  
+💡 *Ինչպե՞ս է սպասարկումը* — Երաշխիքային և հետագա աջակցություն  
+💡 *Հնարավո՞ր է ընդլայնել* — Այո, կոդը ճկուն է  
+💡 *Ժամկետները* — Հստակ նշվում են պայմանագրում  
+💡 *Աջակցությո՞ւն* — Մշտական և արագ 🤝`, backToMain, 'Markdown');
+            break;
+
+        case 'feedback':
+            userState[chatId] = 'AWAITING_FEEDBACK';
+            sendFancyMessage(chatId, `📢 Բողոքների և Առաջարկների Բաժին
+
+Գրեք Ձեր հաղորդագրությունը ստորև 👇`, {
+                reply_markup: {
+                    inline_keyboard: [[{ text: '❌ Չեղարկել', callback_data: 'back_to_main' }]]
+                }
+            });
+            break;
+
+        case 'why_us':
+            sendFancyMessage(chatId, `💎 Ինչու՞ ընտրել Mkheyan Engineering
+
+✅ Միջազգային ստանդարտներ  
+✅ Անհատական լուծումներ  
+✅ Հստակ ժամկետներ  
+✅ Թափանցիկ գնագոյացում  
+✅ Կենտրոնացած ենք Ձեր աճի վրա 🎯`, backToMain);
+            break;
+
+        case 'contact':
+            sendFancyMessage(chatId, `📞 Կապ և Պատվեր
+
+Պատրաստ ենք սկսել Ձեր նախագիծը հենց հիմա ✨
+
+📱 Հեռախոս: +374 77 430886 / +374 99 430886  
+💬 Telegram: @Mkheyan47  
+📧 Email: programmer.2010.06@gmail.com`, backToMain);
+            break;
+    }
+
+    bot.answerCallbackQuery(query.id).catch(() => {});
+});
+
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+
+    if (userState[chatId] === 'AWAITING_FEEDBACK' && msg.text && !msg.text.startsWith('/')) {
+        const feedbackToAdmin = `📩 Նոր Feedback Mkheyan Engineering-ից
+
+👤 Անուն: ${msg.from.first_name} ${msg.from.last_name || ''}  
+🔗 Username: @${msg.from.username || 'չկա'}  
+🆔 ID: ${chatId}
+
+📝 Տեքստ:
+${msg.text}`;
+        
+        bot.sendMessage(ADMIN_CHAT_ID, feedbackToAdmin);
+        sendFancyMessage(chatId, `✅ Շնորհակալություն! Ձեր հաղորդագրությունը ստացվեց և կպատասխանենք շուտով 😊`, mainKeyboard);
+        userState[chatId] = null;
+    } else if (msg.text && !msg.text.startsWith('/')) {
+        bot.sendMessage(chatId, `Խնդրում ենք օգտագործել կոճակները՝ ծառայություններին ծանոթանալու համար 😊`, mainKeyboard);
+    }
+});
+
+// Render-ի համար server (միացված է մնում)
+const http = require('http');
+http.createServer((req, res) => {
+    res.write('Bot is running!');
+    res.end();
+}).listen(process.env.PORT || 3000);
+
+console.log("Mkheyan Engineering Bot-ը գործարկվեց 🚀");
